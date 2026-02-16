@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>StudyDrop — Smart Study Guides, Instantly</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+<style>
+  /* ─── Reset & Base ─────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+–ink:      #0f0d0b;
+–paper:    #faf8f4;
+–cream:    #f0ebe0;
+–gold:     #c8973a;
+–gold-lt:  #f0d898;
+–rust:     #b84c2e;
+–sage:     #5a7a5e;
+–mid:      #6b6560;
+–line:     #d8d2c8;
+–card-bg:  #ffffff;
+–shadow:   0 4px 24px rgba(15,13,11,.09);
+–r:        10px;
+–ff-head:  ‘Playfair Display’, serif;
+–ff-body:  ‘DM Sans’, sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+font-family: var(–ff-body);
+background: var(–paper);
+color: var(–ink);
+line-height: 1.6;
+overflow-x: hidden;
+}
+
+/* ─── Noise Texture Overlay ─────────────────────── */
+body::before {
+content: ‘’;
+position: fixed; inset: 0;
+background-image: url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 200 200’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘n’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=’.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23n)’ opacity=’.035’/%3E%3C/svg%3E”);
+pointer-events: none; z-index: 999; opacity: .5;
+}
+
+/* ─── Nav ───────────────────────────────────────── */
+nav {
+display: flex; align-items: center; justify-content: space-between;
+padding: 1.25rem 5vw;
+border-bottom: 1px solid var(–line);
+position: sticky; top: 0;
+background: rgba(250,248,244,.92);
+backdrop-filter: blur(8px);
+z-index: 100;
+animation: fadeDown .5s ease both;
+}
+
+.logo {
+font-family: var(–ff-head);
+font-size: 1.5rem; font-weight: 900;
+letter-spacing: -.02em;
+color: var(–ink);
+display: flex; align-items: center; gap: .45rem;
+}
+.logo-dot { color: var(–gold); }
+
+nav a {
+font-size: .875rem; font-weight: 500;
+color: var(–mid); text-decoration: none;
+transition: color .2s;
+}
+nav a:hover { color: var(–ink); }
+nav .nav-links { display: flex; gap: 2rem; }
+
+/* ─── Hero ──────────────────────────────────────── */
+.hero {
+padding: 7rem 5vw 5rem;
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 4rem;
+align-items: center;
+max-width: 1200px; margin: 0 auto;
+animation: fadeUp .7s .1s ease both;
+}
+
+.badge {
+display: inline-flex; align-items: center; gap: .5rem;
+background: var(–cream); border: 1px solid var(–line);
+padding: .35rem .85rem; border-radius: 99px;
+font-size: .75rem; font-weight: 600; letter-spacing: .06em;
+text-transform: uppercase; color: var(–gold);
+margin-bottom: 1.5rem;
+}
+.badge::before {
+content: ‘’; width: 7px; height: 7px;
+background: var(–gold); border-radius: 50%;
+animation: pulse 2s infinite;
+}
+
+h1 {
+font-family: var(–ff-head);
+font-size: clamp(2.8rem, 5vw, 4.2rem);
+font-weight: 900; line-height: 1.1;
+letter-spacing: -.03em;
+}
+
+h1 em {
+font-style: normal;
+color: var(–gold);
+position: relative;
+display: inline-block;
+}
+h1 em::after {
+content: ‘’;
+position: absolute; bottom: -4px; left: 0; right: 0; height: 3px;
+background: linear-gradient(90deg, var(–gold), var(–gold-lt));
+border-radius: 2px;
+}
+
+.hero-sub {
+margin-top: 1.25rem;
+font-size: 1.1rem; font-weight: 300; color: var(–mid);
+max-width: 42ch; line-height: 1.7;
+}
+
+.hero-stats {
+display: flex; gap: 2rem; margin-top: 2.5rem;
+}
+.stat strong {
+display: block; font-family: var(–ff-head);
+font-size: 1.9rem; font-weight: 900; color: var(–ink);
+}
+.stat span { font-size: .8rem; color: var(–mid); font-weight: 500; }
+
+/* ─── Order Card ────────────────────────────────── */
+.order-card {
+background: var(–card-bg);
+border: 1px solid var(–line);
+border-radius: 20px;
+box-shadow: var(–shadow), 0 0 0 6px rgba(200,151,58,.08);
+padding: 2.25rem 2rem;
+position: relative;
+animation: fadeUp .7s .25s ease both;
+}
+
+.order-card::before {
+content: ‘’;
+position: absolute; inset: -1px; border-radius: 21px;
+background: linear-gradient(145deg, rgba(200,151,58,.25), transparent 60%);
+z-index: -1;
+}
+
+.card-title {
+font-family: var(–ff-head);
+font-size: 1.35rem; font-weight: 700;
+margin-bottom: 1.5rem;
+display: flex; align-items: center; gap: .5rem;
+}
+.card-title span { color: var(–gold); }
+
+/* ─── Selector Group ────────────────────────────── */
+.selector-group { display: flex; flex-direction: column; gap: 1.1rem; }
+
+.field { display: flex; flex-direction: column; gap: .45rem; }
+.field label {
+font-size: .78rem; font-weight: 600;
+letter-spacing: .07em; text-transform: uppercase;
+color: var(–mid);
+}
+
+select {
+appearance: none;
+background: var(–paper);
+border: 1.5px solid var(–line);
+border-radius: var(–r);
+padding: .75rem 2.5rem .75rem 1rem;
+font-family: var(–ff-body);
+font-size: .95rem; font-weight: 500;
+color: var(–ink);
+cursor: pointer;
+transition: border-color .2s, box-shadow .2s;
+background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘16’ height=‘16’ viewBox=‘0 0 24 24’ fill=‘none’ stroke=’%236b6560’ stroke-width=‘2.5’%3E%3Cpolyline points=‘6 9 12 15 18 9’/%3E%3C/svg%3E”);
+background-repeat: no-repeat;
+background-position: right 1rem center;
+}
+select:focus {
+outline: none;
+border-color: var(–gold);
+box-shadow: 0 0 0 3px rgba(200,151,58,.15);
+}
+
+/* Topic Search */
+.topic-search-wrap {
+position: relative;
+}
+.topic-input-row {
+display: flex; gap: .5rem; align-items: center;
+}
+.topic-input {
+flex: 1;
+background: var(–paper);
+border: 1.5px solid var(–line);
+border-radius: var(–r);
+padding: .75rem 1rem;
+font-family: var(–ff-body);
+font-size: .95rem; font-weight: 500;
+color: var(–ink);
+transition: border-color .2s, box-shadow .2s;
+outline: none;
+}
+.topic-input::placeholder { color: #b0a89e; font-weight: 400; }
+.topic-input:focus {
+border-color: var(–gold);
+box-shadow: 0 0 0 3px rgba(200,151,58,.15);
+}
+.topic-input.valid {
+border-color: var(–sage);
+box-shadow: 0 0 0 3px rgba(90,122,94,.12);
+}
+.topic-input.invalid {
+border-color: var(–rust);
+box-shadow: 0 0 0 3px rgba(184,76,46,.1);
+}
+
+.btn-search-topic {
+background: var(–ink); color: #fff;
+border: none; border-radius: var(–r);
+padding: .75rem 1rem; cursor: pointer;
+transition: all .2s; flex-shrink: 0;
+display: flex; align-items: center; justify-content: center;
+}
+.btn-search-topic:hover { background: var(–gold); }
+.btn-search-topic svg { width: 18px; height: 18px; }
+.btn-search-topic.loading { pointer-events: none; opacity: .7; }
+
+/* Spinner inside button */
+.spin {
+width: 18px; height: 18px;
+border: 2.5px solid rgba(255,255,255,.3);
+border-top-color: #fff;
+border-radius: 50%;
+animation: spin .7s linear infinite;
+display: none;
+}
+.btn-search-topic.loading .spin { display: block; }
+.btn-search-topic.loading .search-icon { display: none; }
+
+/* AI result area */
+.topic-result {
+margin-top: .65rem;
+border-radius: var(–r);
+overflow: hidden;
+transition: all .25s;
+}
+
+.result-confirmed {
+display: flex; align-items: flex-start; gap: .75rem;
+background: rgba(90,122,94,.08);
+border: 1.5px solid var(–sage);
+border-radius: var(–r);
+padding: .85rem 1rem;
+}
+.result-confirmed .check { font-size: 1.1rem; flex-shrink: 0; margin-top: .05rem; }
+.result-confirmed .res-label {
+font-size: .72rem; text-transform: uppercase; letter-spacing: .07em;
+font-weight: 700; color: var(–sage); margin-bottom: .2rem;
+}
+.result-confirmed .res-topic {
+font-size: .95rem; font-weight: 700; color: var(–ink);
+font-family: var(–ff-head);
+}
+.result-confirmed .res-desc {
+font-size: .8rem; color: var(–mid); margin-top: .2rem; line-height: 1.5;
+}
+
+.result-suggestions {
+background: rgba(200,151,58,.06);
+border: 1.5px solid var(–gold);
+border-radius: var(–r);
+padding: .85rem 1rem;
+}
+.result-suggestions .sug-label {
+font-size: .72rem; text-transform: uppercase; letter-spacing: .07em;
+font-weight: 700; color: var(–gold); margin-bottom: .6rem;
+}
+.sug-chips {
+display: flex; flex-wrap: wrap; gap: .4rem;
+}
+.sug-chip {
+background: var(–paper); border: 1.5px solid var(–line);
+border-radius: 99px; padding: .35rem .85rem;
+font-size: .82rem; font-weight: 500; cursor: pointer;
+transition: all .15s; color: var(–ink);
+}
+.sug-chip:hover {
+border-color: var(–gold); background: rgba(200,151,58,.1);
+color: var(–ink);
+}
+
+.result-error {
+display: flex; align-items: center; gap: .6rem;
+background: rgba(184,76,46,.07);
+border: 1.5px solid var(–rust);
+border-radius: var(–r);
+padding: .75rem 1rem;
+font-size: .875rem; color: var(–rust); font-weight: 500;
+}
+
+/* Preview Banner */
+.preview-banner {
+display: flex; align-items: center; justify-content: space-between;
+margin-top: 1.5rem; padding: 1rem 1.15rem;
+background: var(–cream); border-radius: var(–r);
+border: 1px dashed var(–gold);
+}
+.preview-content .label {
+font-size: .72rem; text-transform: uppercase; letter-spacing: .07em;
+font-weight: 600; color: var(–mid); margin-bottom: .15rem;
+}
+.preview-content .preview-text {
+font-size: .9rem; font-weight: 600; color: var(–ink);
+font-family: var(–ff-head);
+}
+.preview-icon { font-size: 1.8rem; }
+
+/* Price & Button */
+.price-row {
+display: flex; align-items: flex-end;
+justify-content: space-between; margin-top: 1.5rem;
+}
+.price-info .from { font-size: .75rem; color: var(–mid); text-transform: uppercase; letter-spacing: .06em; }
+.price-info .price {
+font-family: var(–ff-head);
+font-size: 2.2rem; font-weight: 900; line-height: 1;
+color: var(–ink);
+}
+.price-info .price sub {
+font-size: .9rem; font-weight: 400; vertical-align: super; color: var(–mid);
+}
+
+.btn-buy {
+background: var(–ink);
+color: #fff;
+border: none; border-radius: var(–r);
+padding: .9rem 1.8rem;
+font-family: var(–ff-body); font-size: 1rem; font-weight: 600;
+cursor: pointer; transition: all .2s;
+display: flex; align-items: center; gap: .6rem;
+position: relative; overflow: hidden;
+}
+.btn-buy::after {
+content: ‘’;
+position: absolute; inset: 0;
+background: linear-gradient(135deg, rgba(255,255,255,.12), transparent);
+opacity: 0; transition: opacity .2s;
+}
+.btn-buy:hover { background: var(–gold); transform: translateY(-2px); box-shadow: 0 6px 20px rgba(200,151,58,.4); }
+.btn-buy:hover::after { opacity: 1; }
+.btn-buy:active { transform: translateY(0); }
+.btn-buy svg { width: 18px; height: 18px; }
+
+/* ─── How It Works ──────────────────────────────── */
+.section { padding: 6rem 5vw; max-width: 1200px; margin: 0 auto; }
+
+.section-label {
+font-size: .78rem; letter-spacing: .1em; text-transform: uppercase;
+font-weight: 700; color: var(–gold); margin-bottom: .75rem;
+}
+.section-title {
+font-family: var(–ff-head);
+font-size: clamp(1.8rem, 3vw, 2.8rem);
+font-weight: 900; line-height: 1.2;
+max-width: 26ch;
+}
+
+.steps {
+display: grid; grid-template-columns: repeat(3, 1fr);
+gap: 2rem; margin-top: 3.5rem;
+}
+.step {
+padding: 2rem;
+border: 1px solid var(–line); border-radius: 16px;
+background: var(–card-bg);
+transition: transform .2s, box-shadow .2s;
+}
+.step:hover { transform: translateY(-4px); box-shadow: var(–shadow); }
+
+.step-num {
+font-family: var(–ff-head); font-size: 3rem; font-weight: 900;
+color: var(–gold-lt); line-height: 1; margin-bottom: 1rem;
+}
+.step h3 { font-family: var(–ff-head); font-size: 1.2rem; margin-bottom: .5rem; }
+.step p { font-size: .9rem; color: var(–mid); line-height: 1.6; }
+.step-icon { font-size: 1.8rem; margin-bottom: .75rem; }
+
+/* ─── Divider ───────────────────────────────────── */
+.divider { border: none; border-top: 1px solid var(–line); margin: 0 5vw; }
+
+/* ─── Subjects Grid ─────────────────────────────── */
+.subjects-grid {
+display: grid; grid-template-columns: repeat(4, 1fr);
+gap: 1rem; margin-top: 3rem;
+}
+.subject-card {
+border: 1px solid var(–line); border-radius: 14px;
+padding: 1.5rem 1.25rem;
+background: var(–card-bg); text-align: center;
+transition: all .2s; cursor: default;
+}
+.subject-card:hover {
+border-color: var(–gold); background: rgba(200,151,58,.04);
+transform: translateY(-3px); box-shadow: var(–shadow);
+}
+.subject-card .icon { font-size: 2rem; margin-bottom: .65rem; display: block; }
+.subject-card strong { display: block; font-weight: 600; font-size: .95rem; }
+.subject-card span { font-size: .8rem; color: var(–mid); }
+
+/* ─── CTA Banner ────────────────────────────────── */
+.cta-section {
+margin: 3rem 5vw;
+background: var(–ink);
+border-radius: 24px;
+padding: 4rem 5%;
+display: flex; align-items: center; justify-content: space-between;
+gap: 2rem; overflow: hidden;
+position: relative;
+}
+.cta-section::before {
+content: ‘’;
+position: absolute; top: -60px; right: -60px;
+width: 280px; height: 280px;
+background: radial-gradient(circle, rgba(200,151,58,.25), transparent 70%);
+border-radius: 50%;
+}
+.cta-section::after {
+content: ‘’;
+position: absolute; bottom: -80px; left: 30%;
+width: 200px; height: 200px;
+background: radial-gradient(circle, rgba(90,122,94,.2), transparent 70%);
+border-radius: 50%;
+}
+.cta-text { position: relative; z-index: 1; }
+.cta-text h2 {
+font-family: var(–ff-head);
+font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+font-weight: 900; color: #fff; line-height: 1.2;
+}
+.cta-text p { color: rgba(255,255,255,.6); margin-top: .75rem; font-size: .95rem; }
+
+.btn-light {
+background: var(–gold);
+color: var(–ink); border: none; border-radius: var(–r);
+padding: .9rem 2rem; font-family: var(–ff-body);
+font-size: 1rem; font-weight: 700; cursor: pointer;
+transition: all .2s; white-space: nowrap;
+position: relative; z-index: 1;
+}
+.btn-light:hover { background: var(–gold-lt); transform: translateY(-2px); }
+
+/* ─── Footer ────────────────────────────────────── */
+footer {
+border-top: 1px solid var(–line);
+padding: 2.5rem 5vw;
+display: flex; align-items: center; justify-content: space-between;
+font-size: .825rem; color: var(–mid);
+}
+footer a { color: var(–mid); text-decoration: none; }
+footer a:hover { color: var(–ink); }
+.footer-links { display: flex; gap: 1.5rem; }
+
+/* ─── Modal ─────────────────────────────────────── */
+.modal-backdrop {
+position: fixed; inset: 0;
+background: rgba(15,13,11,.5); backdrop-filter: blur(6px);
+z-index: 200; display: flex; align-items: center; justify-content: center;
+opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.modal-backdrop.open { opacity: 1; pointer-events: all; }
+
+.modal {
+background: var(–card-bg); border-radius: 20px;
+padding: 2.5rem; max-width: 440px; width: 90%;
+box-shadow: 0 24px 80px rgba(0,0,0,.2);
+transform: translateY(20px) scale(.97);
+transition: transform .25s;
+}
+.modal-backdrop.open .modal { transform: translateY(0) scale(1); }
+
+.modal h2 { font-family: var(–ff-head); font-size: 1.6rem; font-weight: 900; margin-bottom: .5rem; }
+.modal p { color: var(–mid); font-size: .9rem; margin-bottom: 1.5rem; }
+
+.modal-summary {
+background: var(–cream); border-radius: var(–r);
+padding: 1rem 1.25rem; margin-bottom: 1.5rem;
+border: 1px solid var(–line);
+}
+.modal-summary .row {
+display: flex; justify-content: space-between;
+font-size: .875rem; padding: .3rem 0;
+}
+.modal-summary .row span:first-child { color: var(–mid); }
+.modal-summary .row span:last-child { font-weight: 600; }
+.modal-summary .total-row {
+border-top: 1px solid var(–line); margin-top: .5rem; padding-top: .75rem;
+font-weight: 700; font-size: 1rem;
+}
+.modal-summary .total-row span:last-child { color: var(–gold); font-size: 1.1rem; }
+
+.modal-note {
+font-size: .78rem; color: var(–mid); text-align: center;
+margin-top: 1rem;
+display: flex; align-items: center; justify-content: center; gap: .35rem;
+}
+
+.btn-pay {
+width: 100%; background: var(–ink); color: #fff;
+border: none; border-radius: var(–r); padding: 1rem;
+font-family: var(–ff-body); font-size: 1rem; font-weight: 700;
+cursor: pointer; transition: all .2s;
+display: flex; align-items: center; justify-content: center; gap: .6rem;
+}
+.btn-pay:hover { background: var(–gold); }
+
+.btn-cancel {
+width: 100%; background: none; border: 1.5px solid var(–line);
+border-radius: var(–r); padding: .85rem;
+font-family: var(–ff-body); font-size: .9rem; font-weight: 500;
+cursor: pointer; color: var(–mid); margin-top: .65rem;
+transition: border-color .2s, color .2s;
+}
+.btn-cancel:hover { border-color: var(–ink); color: var(–ink); }
+
+/* ─── Success State ─────────────────────────────── */
+.success-state { text-align: center; display: none; }
+.success-state .checkmark {
+font-size: 3rem; margin-bottom: 1rem; display: block;
+animation: pop .4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* ─── Toast ─────────────────────────────────────── */
+.toast {
+position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px);
+background: var(–ink); color: #fff;
+padding: .85rem 1.75rem; border-radius: 99px;
+font-size: .9rem; font-weight: 500;
+box-shadow: 0 8px 32px rgba(0,0,0,.2);
+z-index: 300; transition: transform .35s cubic-bezier(.22,.68,0,1.2);
+white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ─── Animations ────────────────────────────────── */
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+@keyframes fadeUp {
+from { opacity: 0; transform: translateY(20px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeDown {
+from { opacity: 0; transform: translateY(-12px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+0%, 100% { opacity: 1; transform: scale(1); }
+50%       { opacity: .5; transform: scale(.8); }
+}
+@keyframes pop {
+0%   { transform: scale(0) rotate(-10deg); }
+70%  { transform: scale(1.15) rotate(3deg); }
+100% { transform: scale(1) rotate(0); }
+}
+
+/* ─── Responsive ────────────────────────────────── */
+@media (max-width: 900px) {
+.hero { grid-template-columns: 1fr; gap: 3rem; }
+.steps { grid-template-columns: 1fr; }
+.subjects-grid { grid-template-columns: repeat(2, 1fr); }
+.cta-section { flex-direction: column; text-align: center; }
+}
+@media (max-width: 600px) {
+.hero { padding: 4rem 5vw 3rem; }
+.topics-grid { grid-template-columns: 1fr 1fr; }
+.subjects-grid { grid-template-columns: repeat(2, 1fr); }
+footer { flex-direction: column; gap: 1rem; text-align: center; }
+.footer-links { justify-content: center; }
+}
+</style>
+
+</head>
+<body>
+
+<!-- ── NAV ──────────────────────────────── -->
+
+<nav>
+  <div class="logo">Study<span class="logo-dot">Drop</span></div>
+  <div class="nav-links">
+    <a href="#how">How it works</a>
+    <a href="#subjects">Subjects</a>
+    <a href="#" onclick="openModal(); return false;">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── HERO ─────────────────────────────── -->
+
+<div class="hero">
+  <!-- Left column -->
+  <div>
+    <div class="badge">AI-Powered Study Guides</div>
+    <h1>Learn <em>smarter</em>,<br>not harder.</h1>
+    <p class="hero-sub">
+      Tell us your grade, subject, and topic — we'll generate a focused study guide tailored exactly to what you need to know, instantly.
+    </p>
+    <div class="hero-stats">
+      <div class="stat">
+        <strong>12+</strong>
+        <span>Subjects covered</span>
+      </div>
+      <div class="stat">
+        <strong>K–12</strong>
+        <span>All grade levels</span>
+      </div>
+      <div class="stat">
+        <strong>&lt;60s</strong>
+        <span>Generation time</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right column: Order Card -->
+
+  <div class="order-card">
+    <div class="card-title">Build your guide <span>✦</span></div>
+
+```
+<div class="selector-group">
+
+  <!-- GRADE -->
+  <div class="field">
+    <label>Grade Level</label>
+    <select id="gradeSelect" onchange="updatePreview()">
+      <option value="">— Select grade —</option>
+      <optgroup label="Elementary School">
+        <option value="1st Grade">1st Grade</option>
+        <option value="2nd Grade">2nd Grade</option>
+        <option value="3rd Grade">3rd Grade</option>
+        <option value="4th Grade">4th Grade</option>
+        <option value="5th Grade">5th Grade</option>
+      </optgroup>
+      <optgroup label="Middle School">
+        <option value="6th Grade">6th Grade</option>
+        <option value="7th Grade">7th Grade</option>
+        <option value="8th Grade">8th Grade</option>
+      </optgroup>
+      <optgroup label="High School">
+        <option value="9th Grade (Freshman)">9th Grade</option>
+        <option value="10th Grade (Sophomore)">10th Grade</option>
+        <option value="11th Grade (Junior)">11th Grade</option>
+        <option value="12th Grade (Senior)">12th Grade</option>
+      </optgroup>
+    </select>
+  </div>
+
+  <!-- SUBJECT -->
+  <div class="field">
+    <label>Subject</label>
+    <select id="subjectSelect" onchange="updatePreview()">
+      <option value="">— Select subject —</option>
+      <option value="Math">Math</option>
+      <option value="Science">Science</option>
+      <option value="English / Language Arts">English / Language Arts</option>
+      <option value="History & Social Studies">History & Social Studies</option>
+      <option value="Biology">Biology</option>
+      <option value="Chemistry">Chemistry</option>
+      <option value="Physics">Physics</option>
+      <option value="Geography">Geography</option>
+      <option value="Spanish">Spanish</option>
+      <option value="Computer Science">Computer Science</option>
+    </select>
+  </div>
+
+  <!-- TOPIC -->
+  <div class="field">
+    <label>Topic — type anything, AI will check it</label>
+    <div class="topic-search-wrap">
+      <div class="topic-input-row">
+        <input
+          type="text"
+          id="topicInput"
+          class="topic-input"
+          placeholder="e.g. Photosynthesis, the Civil War, quadratic equations…"
+          oninput="onTopicInput()"
+          onkeydown="if(event.key==='Enter') searchTopic()"
+          autocomplete="off"
+        />
+        <button class="btn-search-topic" id="searchBtn" onclick="searchTopic()" title="Check with AI">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+            <path d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+          </svg>
+          <div class="spin"></div>
+        </button>
+      </div>
+      <div class="topic-result" id="topicResult"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Preview -->
+<div class="preview-banner">
+  <div class="preview-content">
+    <div class="label">Your guide will cover</div>
+    <div class="preview-text" id="previewText">Select options above</div>
+  </div>
+  <div class="preview-icon">📄</div>
+</div>
+
+<!-- Price + Buy -->
+<div class="price-row">
+  <div class="price-info">
+    <div class="from" style="font-size:.82rem; color:var(--mid); line-height:1.5; max-width:22ch;">Come to <strong style="color:var(--ink);">Ryker</strong> to find the price of this study guide</div>
+  </div>
+  <button class="btn-buy" onclick="handleBuy()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+    </svg>
+    Get My Guide
+  </button>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ── HOW IT WORKS ───────────────────── -->
+
+<hr class="divider" />
+
+<section class="section" id="how">
+  <div class="section-label">The process</div>
+  <div class="section-title">Three steps from zero to ready.</div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-icon">🎯</div>
+      <div class="step-num">01</div>
+      <h3>Choose your topic</h3>
+      <p>Select your grade level, subject, and the specific topic you want to master. No account needed — just pick and go.</p>
+    </div>
+    <div class="step">
+      <div class="step-icon">💳</div>
+      <div class="step-num">02</div>
+      <h3>Quick checkout</h3>
+      <p>Pay once for a single guide or grab a bundle. Secure checkout via Stripe — your guide is yours to keep forever.</p>
+    </div>
+    <div class="step">
+      <div class="step-icon">✨</div>
+      <div class="step-num">03</div>
+      <h3>Get your guide</h3>
+      <p>Your AI-generated study guide lands in your inbox (or downloads instantly) as a clean PDF, ready to study from.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- ── SUBJECTS ────────────────────────── -->
+
+<section class="section" id="subjects">
+  <div class="section-label">What we cover</div>
+  <div class="section-title">Every subject, every grade.</div>
+
+  <div class="subjects-grid">
+    <div class="subject-card"><span class="icon">➕</span><strong>Math</strong><span>Algebra · Geometry · Calc</span></div>
+    <div class="subject-card"><span class="icon">🔬</span><strong>Science</strong><span>Biology · Chemistry · Physics</span></div>
+    <div class="subject-card"><span class="icon">📖</span><strong>English</strong><span>Grammar · Literature · Writing</span></div>
+    <div class="subject-card"><span class="icon">🌍</span><strong>History</strong><span>World · US · Social Studies</span></div>
+    <div class="subject-card"><span class="icon">🗺️</span><strong>Geography</strong><span>Maps · Capitals · Regions</span></div>
+    <div class="subject-card"><span class="icon">🇪🇸</span><strong>Spanish</strong><span>Vocab · Grammar · Verbs</span></div>
+    <div class="subject-card"><span class="icon">💻</span><strong>CS</strong><span>Coding · Algorithms · Logic</span></div>
+    <div class="subject-card"><span class="icon">🎨</span><strong>More soon</strong><span>Art · Music · Economics</span></div>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────── -->
+
+<div class="cta-section">
+  <div class="cta-text">
+    <h2>Ready to ace your next exam?</h2>
+    <p>Get a custom guide in under a minute. No fluff — just what you need to know.</p>
+  </div>
+  <button class="btn-light" onclick="document.querySelector('.order-card').scrollIntoView({behavior:'smooth'})">
+    Build my study guide →
+  </button>
+</div>
+
+<!-- ── FOOTER ─────────────────────────── -->
+
+<footer>
+  <div class="logo" style="font-size:1.1rem;">Study<span class="logo-dot">Drop</span></div>
+  <div class="footer-links">
+    <a href="#">How it works</a>
+    <a href="#">Subjects</a>
+    <a href="#">FAQ</a>
+    <a href="#">Contact</a>
+  </div>
+  <div>© 2025 StudyDrop. All rights reserved.</div>
+</footer>
+
+<!-- ── MODAL ──────────────────────────── -->
+
+<div class="modal-backdrop" id="modal" onclick="handleBackdropClick(event)">
+  <div class="modal" id="modalBox">
+
+```
+<!-- State 1: Confirm -->
+<div id="confirmState">
+  <h2>Generate your guide ✦</h2>
+  <p>AI will build a full study guide for you instantly.</p>
+
+  <div class="modal-summary">
+    <div class="row"><span>Grade</span><span id="m-grade">—</span></div>
+    <div class="row"><span>Subject</span><span id="m-subject">—</span></div>
+    <div class="row"><span>Topic</span><span id="m-topic">—</span></div>
+    <div class="row"><span>Includes</span><span>Key concepts, examples, quiz</span></div>
+  </div>
+
+        <button class="btn-pay" onclick="generateGuide()" style="margin-top:1.25rem;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z"/>
+      <path d="M18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+    </svg>
+    Generate My Study Guide — Free
+  </button>
+  <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+</div>
+
+<!-- State 2: Loading -->
+<div id="loadingState" style="display:none; text-align:center; padding:.5rem 0 1rem;">
+  <div class="gen-spinner"></div>
+  <h2 style="margin-top:1.5rem; font-family:'Playfair Display',serif;">Building your guide…</h2>
+  <p id="loadingMsg" style="color:#6b6560; font-size:.9rem; margin-top:.6rem; min-height:1.4em;">Researching key concepts…</p>
+</div>
+```
+
+  </div>
+</div>
+
+<!-- ── GUIDE FULL-PAGE OVERLAY ────────── -->
+
+<div id="guideOverlay">
+  <div id="guideInner">
+    <div id="guideToolbar">
+      <div style="font-family:'Playfair Display',serif; font-size:1.15rem; font-weight:900; letter-spacing:-.02em;">
+        Study<span style="color:#c8973a;">Drop</span>
+      </div>
+      <div style="display:flex; gap:.65rem; align-items:center;">
+        <button class="guide-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+        <button class="guide-btn guide-close-btn" onclick="closeGuide()">✕ Close</button>
+      </div>
+    </div>
+    <div id="guideContent"></div>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────── -->
+
+<div class="toast" id="toast"></div>
+
+<style>
+  /* ── Guide overlay ── */
+  #guideOverlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 500;
+    background: #faf8f4;
+    overflow-y: auto;
+  }
+  #guideInner {
+    max-width: 820px; margin: 0 auto;
+    padding: 0 5vw 6rem;
+  }
+  #guideToolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.1rem 0; border-bottom: 1px solid #d8d2c8;
+    position: sticky; top: 0; background: #faf8f4;
+    z-index: 10;
+  }
+  .guide-btn {
+    background: #0f0d0b; color: #fff;
+    border: none; border-radius: 8px;
+    padding: .5rem 1rem; font-family: 'DM Sans', sans-serif;
+    font-size: .82rem; font-weight: 600; cursor: pointer;
+    transition: background .2s;
+  }
+  .guide-btn:hover { background: #c8973a; }
+  .guide-close-btn { background: transparent; color: #6b6560; border: 1.5px solid #d8d2c8; }
+  .guide-close-btn:hover { background: #f0ebe0; color: #0f0d0b; }
+
+  /* ── Guide content typography ── */
+  #guideContent { padding-top: 2.5rem; }
+
+  .guide-header {
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #0f0d0b;
+  }
+  .guide-header .guide-meta {
+    font-size: .78rem; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: #c8973a; margin-bottom: .75rem;
+  }
+  .guide-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900; line-height: 1.1;
+    letter-spacing: -.03em; color: #0f0d0b;
+  }
+  .guide-header .guide-sub {
+    margin-top: .75rem; font-size: 1rem;
+    color: #6b6560; font-weight: 300;
+  }
+
+  .guide-section {
+    margin-bottom: 2.25rem;
+  }
+  .guide-section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem; font-weight: 700;
+    color: #0f0d0b; margin-bottom: .85rem;
+    padding-bottom: .4rem;
+    border-bottom: 1.5px solid #d8d2c8;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .guide-section p {
+    font-size: .97rem; line-height: 1.75;
+    color: #2a2825; margin-bottom: .75rem;
+  }
+  .guide-section ul, .guide-section ol {
+    padding-left: 1.4rem; margin-bottom: .75rem;
+  }
+  .guide-section li {
+    font-size: .95rem; line-height: 1.7;
+    color: #2a2825; margin-bottom: .3rem;
+  }
+  .guide-section strong { color: #0f0d0b; }
+
+  .concept-card {
+    background: #fff; border: 1px solid #d8d2c8;
+    border-radius: 10px; padding: 1rem 1.25rem;
+    margin-bottom: .75rem;
+  }
+  .concept-card .concept-term {
+    font-weight: 700; font-family: 'Playfair Display', serif;
+    font-size: 1rem; color: #0f0d0b; margin-bottom: .3rem;
+  }
+  .concept-card .concept-def {
+    font-size: .9rem; color: #6b6560; line-height: 1.6;
+  }
+
+  .quiz-card {
+    background: #f0ebe0; border: 1px solid #d8d2c8;
+    border-radius: 10px; padding: 1rem 1.25rem;
+    margin-bottom: .75rem; cursor: pointer;
+  }
+  .quiz-card .quiz-q {
+    font-size: .95rem; font-weight: 600; color: #0f0d0b;
+    margin-bottom: .5rem;
+  }
+  .quiz-card .quiz-a {
+    font-size: .88rem; color: #5a7a5e; font-weight: 500;
+    display: none; margin-top: .35rem;
+    padding-top: .5rem; border-top: 1px dashed #d8d2c8;
+  }
+  .quiz-card.revealed .quiz-a { display: block; }
+  .quiz-card .quiz-hint {
+    font-size: .75rem; color: #b0a89e; margin-top: .25rem;
+  }
+  .quiz-card.revealed .quiz-hint { display: none; }
+
+  .tip-box {
+    background: rgba(200,151,58,.08);
+    border: 1.5px solid rgba(200,151,58,.4);
+    border-radius: 10px; padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    font-size: .92rem; color: #2a2825; line-height: 1.65;
+  }
+  .tip-box strong { color: #c8973a; }
+
+  /* ── Modal loading spinner ── */
+  .gen-spinner {
+    width: 48px; height: 48px; margin: .5rem auto 0;
+    border: 4px solid rgba(200,151,58,.2);
+    border-top-color: #c8973a;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+  }
+
+  @media print {
+    #guideToolbar { display: none !important; }
+    #guideOverlay { position: static; overflow: visible; }
+    #guideInner { max-width: 100%; padding: 0 1cm; }
+    body > *:not(#guideOverlay) { display: none !important; }
+  }
+</style>
+
+<script>
+  // ── State ─────────────────────────────
+  let selectedTopic = '';
+
+  // ── Topic input ────────────────────────
+  function onTopicInput() {
+    const val = document.getElementById('topicInput').value.trim();
+    if (!val) {
+      selectedTopic = '';
+      document.getElementById('topicResult').innerHTML = '';
+      document.getElementById('topicInput').className = 'topic-input';
+      updatePreview();
+    }
+  }
+
+  async function searchTopic() {
+    const input  = document.getElementById('topicInput');
+    const result = document.getElementById('topicResult');
+    const btn    = document.getElementById('searchBtn');
+    const topic  = input.value.trim();
+    if (!topic) { showToast('Type a topic first.'); return; }
+
+    const grade   = document.getElementById('gradeSelect').value;
+    const subject = document.getElementById('subjectSelect').value;
+
+    btn.classList.add('loading');
+    result.innerHTML = '';
+    input.className = 'topic-input';
+    selectedTopic = '';
+    updatePreview();
+
+    await new Promise(r => setTimeout(r, 600));
+
+    try {
+      const parsed = lookupTopic(topic, subject);
+      if (parsed.valid) {
+        selectedTopic = parsed.canonicalTopic;
+        input.className = 'topic-input valid';
+        updatePreview();
+        result.innerHTML = `
+          <div class="result-confirmed">
+            <div class="check">✅</div>
+            <div>
+              <div class="res-label">Topic confirmed</div>
+              <div class="res-topic">${escHtml(parsed.canonicalTopic)}</div>
+              <div class="res-desc">${escHtml(parsed.description)}</div>
+              ${parsed.suggestions?.length ? `
+              <div style="margin-top:.7rem;">
+                <div class="sug-label" style="font-size:.7rem;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--mid);margin-bottom:.4rem;">Related topics</div>
+                <div class="sug-chips">
+                  ${parsed.suggestions.map(s => `<span class="sug-chip" onclick="pickSuggestion('${escAttr(s)}')">${escHtml(s)}</span>`).join('')}
+                </div>
+              </div>` : ''}
+            </div>
+          </div>`;
+      } else {
+        input.className = 'topic-input invalid';
+        result.innerHTML = `
+          <div class="result-suggestions">
+            <div class="sug-label">Did you mean one of these?</div>
+            <div class="sug-chips">
+              ${(parsed.suggestions||[]).map(s=>`<span class="sug-chip" onclick="pickSuggestion('${escAttr(s)}')">${escHtml(s)}</span>`).join('')}
+            </div>
+          </div>`;
+      }
+    } catch(e) {
+      selectedTopic = topic;
+      input.className = 'topic-input valid';
+      updatePreview();
+      result.innerHTML = `<div class="result-confirmed"><div class="check">✅</div><div><div class="res-label">Topic saved</div><div class="res-topic">${escHtml(topic)}</div></div></div>`;
+    }
+    btn.classList.remove('loading');
+  }
+
+  function pickSuggestion(topic) {
+    document.getElementById('topicInput').value = topic;
+    searchTopic();
+  }
+
+  function updatePreview() {
+    const grade   = document.getElementById('gradeSelect').value;
+    const subject = document.getElementById('subjectSelect').value;
+    const topic   = selectedTopic;
+    const el      = document.getElementById('previewText');
+    if (grade && subject && topic)   el.textContent = `${topic} · ${subject} · ${grade}`;
+    else if (subject && topic)       el.textContent = `${topic} · ${subject}`;
+    else if (grade && subject)       el.textContent = `${subject} for ${grade}`;
+    else if (topic)                  el.textContent = topic;
+    else                             el.textContent = 'Select options above';
+  }
+
+  // ── Modal ──────────────────────────────
+  function handleBuy() {
+    const grade   = document.getElementById('gradeSelect').value;
+    const subject = document.getElementById('subjectSelect').value;
+    const topic   = selectedTopic;
+    if (!grade)   { showToast('Please select a grade level.'); return; }
+    if (!subject) { showToast('Please select a subject.'); return; }
+    if (!topic)   { showToast('Please type and confirm a topic using the ✦ button.'); return; }
+    document.getElementById('m-grade').textContent   = grade;
+    document.getElementById('m-subject').textContent = subject;
+    document.getElementById('m-topic').textContent   = topic;
+    openModal();
+  }
+
+  function openModal() {
+    document.getElementById('confirmState').style.display = 'block';
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function handleBackdropClick(e) {
+    if (e.target === document.getElementById('modal')) closeModal();
+  }
+
+  // ── Email ──────────────────────────────
+
+  // ── Guide Generation ───────────────────
+  const loadingMessages = [
+    'Researching key concepts…',
+    'Organising the content…',
+    'Writing explanations…',
+    'Adding examples…',
+    'Building the quiz…',
+    'Putting it all together…',
+  ];
+
+  // Rich content database keyed by topic name
+  const GUIDE_CONTENT = {
+    'Taxonomy': {
+      overview: [
+        'Taxonomy is the branch of biology responsible for naming, describing, and classifying all living organisms on Earth. The word comes from the Greek words <strong>taxis</strong> (arrangement) and <strong>nomos</strong> (law). Scientists who study taxonomy are called taxonomists.',
+        'The modern system of taxonomy was developed by Swedish botanist <strong>Carl Linnaeus</strong> in the 18th century. His system, known as the Linnaean taxonomy, gave every known organism a two-part Latin name and organised life into a hierarchy of groups that we still use today.',
+        'Taxonomy is essential because it creates a universal language for scientists worldwide. Without it, the same organism might be called hundreds of different names in different countries and languages, making scientific communication nearly impossible.'
+      ],
+      concepts: [
+        ['Domain', 'The broadest level of classification. All life is divided into three domains: Bacteria, Archaea, and Eukarya.'],
+        ['Kingdom', 'The second-highest rank. The main kingdoms include Animalia, Plantae, Fungi, Protista, and Monera.'],
+        ['Binomial Nomenclature', 'The two-part Latin naming system created by Linnaeus. Every species gets a genus name and a species name, e.g. <em>Homo sapiens</em>.'],
+        ['Genus', 'A group of closely related species. For humans, the genus is <em>Homo</em>.'],
+        ['Species', 'The most specific level of classification. Members of the same species can reproduce with each other.'],
+        ['Phylogeny', 'The evolutionary history of a group of organisms, often shown as a tree diagram called a phylogenetic tree.'],
+      ],
+      explanation: [
+        'The full classification hierarchy from broadest to most specific is: <strong>Domain → Kingdom → Phylum → Class → Order → Family → Genus → Species</strong>. A helpful mnemonic to remember this order is: <em>"Dear King Philip Came Over For Good Spaghetti."</em>',
+        'To understand how this works in practice, consider the domestic dog. Its full classification is: Domain: Eukarya, Kingdom: Animalia, Phylum: Chordata, Class: Mammalia, Order: Carnivora, Family: Canidae, Genus: <em>Canis</em>, Species: <em>Canis lupus familiaris</em>.',
+        'Modern taxonomy increasingly relies on <strong>DNA analysis</strong> rather than just physical appearance. Two organisms that look very similar might actually be distantly related genetically, while two that look different could be closely related. This field is called <em>molecular systematics</em>.',
+        'There are an estimated 8.7 million species on Earth, but only about 1.2 million have been formally described and named. Taxonomists continue to discover and classify thousands of new species every year, especially insects, deep-sea creatures, and microorganisms.'
+      ],
+      tips: [
+        ['Tip', 'Use the mnemonic <strong>"Dear King Philip Came Over For Good Spaghetti"</strong> to remember the order: Domain, Kingdom, Phylum, Class, Order, Family, Genus, Species.'],
+        ['Common mistake', 'Students often forget that binomial names must be <em>italicised</em> when typed, and the genus is capitalised but the species is lowercase — e.g. <em>Homo sapiens</em>, not <em>Homo Sapiens</em>.'],
+        ['Real-world connection', 'Every time you read a medicine label or a plant tag at a garden centre, you might see a Latin binomial name. Doctors and pharmacists use taxonomy to make sure everyone is talking about the same organisms.'],
+      ],
+      quiz: [
+        ['What does "binomial nomenclature" mean?', 'A two-name system for identifying species using genus + species in Latin, created by Carl Linnaeus.'],
+        ['List the 8 levels of classification from broadest to most specific.', 'Domain, Kingdom, Phylum, Class, Order, Family, Genus, Species.'],
+        ['What domain do humans belong to?', 'Eukarya — because human cells have a membrane-bound nucleus.'],
+        ['Why is taxonomy important?', 'It creates a universal scientific language so researchers worldwide can communicate clearly about the same organisms.'],
+        ['What is the species name of modern humans?', '<em>Homo sapiens</em> — <em>Homo</em> is the genus, <em>sapiens</em> is the species.'],
+      ],
+      summary: 'Taxonomy is the science of classifying and naming living organisms using a universal hierarchical system developed by Linnaeus. Every species gets a unique two-part Latin name, and all life is organised from broad (Domain) to specific (Species). Modern taxonomy uses both physical traits and DNA evidence.',
+      bullets: [
+        'The 8 levels are: Domain, Kingdom, Phylum, Class, Order, Family, Genus, Species',
+        'Carl Linnaeus created the modern binomial naming system in the 1700s',
+        'Scientific names are always written in italics with a capital genus and lowercase species',
+        'Three domains of life: Bacteria, Archaea, and Eukarya',
+        'DNA analysis is now used alongside physical traits to classify organisms',
+        'Mnemonic: Dear King Philip Came Over For Good Spaghetti',
+      ]
+    },
+    'Photosynthesis': {
+      overview: [
+        'Photosynthesis is the process used by plants, algae, and some bacteria to convert light energy into chemical energy stored as sugar. It is one of the most important biological processes on Earth — it produces the oxygen we breathe and forms the base of nearly all food chains.',
+        'The overall equation for photosynthesis is: <strong>6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂</strong>. In simple terms, plants take in carbon dioxide and water, use sunlight to combine them, and produce glucose (sugar) and oxygen as a byproduct.',
+        'Photosynthesis occurs primarily in the leaves of plants, inside specialised organelles called <strong>chloroplasts</strong>. The green colour of leaves comes from a pigment inside chloroplasts called <strong>chlorophyll</strong>, which absorbs red and blue light while reflecting green light.'
+      ],
+      concepts: [
+        ['Chloroplast', 'The organelle in plant cells where photosynthesis takes place. It contains a green pigment called chlorophyll.'],
+        ['Chlorophyll', 'The green pigment that absorbs light energy (mainly red and blue wavelengths) and uses it to power photosynthesis.'],
+        ['Glucose', 'The simple sugar (C₆H₁₂O₆) produced by photosynthesis. Plants use it for energy and to build other molecules.'],
+        ['Light-dependent reactions', 'The first stage of photosynthesis, which happens in the thylakoid membranes and requires direct sunlight.'],
+        ['Calvin Cycle', 'The second stage of photosynthesis (light-independent), where CO₂ is converted into glucose using energy from the first stage.'],
+        ['Stomata', 'Tiny pores on the underside of leaves that allow CO₂ to enter and O₂ to exit the plant.'],
+      ],
+      explanation: [
+        'Photosynthesis happens in two main stages. The <strong>light-dependent reactions</strong> occur in structures called thylakoids inside the chloroplast. Here, sunlight splits water molecules (H₂O), releases oxygen as a byproduct, and creates energy-carrier molecules ATP and NADPH.',
+        'The second stage, the <strong>Calvin Cycle</strong> (or light-independent reactions), takes place in the stroma of the chloroplast. The plant uses the ATP and NADPH from the first stage to "fix" carbon dioxide from the air into glucose molecules.',
+        'Not all wavelengths of light are equally useful for photosynthesis. Chlorophyll absorbs <strong>red and blue light</strong> most efficiently. Green light is mostly reflected, which is why plants appear green to our eyes.',
+        'The rate of photosynthesis is affected by light intensity, CO₂ concentration, temperature, and water availability. On a cloudy day or at night, photosynthesis slows or stops entirely.'
+      ],
+      tips: [
+        ['Tip', 'Remember the equation by thinking: plants <strong>eat light</strong> and <strong>breathe backwards</strong> — they take in CO₂ (which we breathe out) and release O₂ (which we breathe in).'],
+        ['Common mistake', 'Students often think plants get their food from soil. In fact, plants <em>make</em> their own food through photosynthesis. Soil provides water and minerals, but not energy.'],
+        ['Real-world connection', 'Every meal you eat traces back to photosynthesis. Even if you eat meat, the animal ate plants, which used sunlight to grow. The sun is the ultimate energy source for almost all life on Earth.'],
+      ],
+      quiz: [
+        ['What are the two raw materials (inputs) of photosynthesis?', 'Carbon dioxide (CO₂) from the air, and water (H₂O) absorbed through the roots.'],
+        ['Where in the plant cell does photosynthesis occur?', 'In the chloroplasts, specifically in the thylakoids (light reactions) and stroma (Calvin Cycle).'],
+        ['What pigment captures light for photosynthesis?', 'Chlorophyll — the green pigment found in chloroplasts.'],
+        ['What are the two products (outputs) of photosynthesis?', 'Glucose (sugar) for energy, and oxygen which is released into the air.'],
+        ['Write the overall equation for photosynthesis.', '6CO₂ + 6H₂O + light energy → C₆H₁₂O₆ + 6O₂'],
+      ],
+      summary: 'Photosynthesis is how plants make their own food using sunlight, water, and CO₂, producing glucose and oxygen. It occurs in chloroplasts and has two stages: light-dependent reactions and the Calvin Cycle.',
+      bullets: [
+        'Equation: 6CO₂ + 6H₂O + light → C₆H₁₂O₆ + 6O₂',
+        'Occurs in chloroplasts inside plant cells',
+        'Chlorophyll absorbs red and blue light; reflects green',
+        'Two stages: light-dependent reactions (thylakoids) and Calvin Cycle (stroma)',
+        'Produces glucose for energy and oxygen as a byproduct',
+        'Rate is affected by light, CO₂, temperature, and water availability',
+      ]
+    },
+    'Digestive System': {
+      overview: [
+        'The digestive system is a group of organs that work together to break down the food you eat into nutrients your body can absorb and use for energy, growth, and repair. The entire journey food takes — from your mouth to the toilet — is called the <strong>gastrointestinal (GI) tract</strong>, and it is about 9 metres long in an adult.',
+        'Digestion involves two main processes: <strong>mechanical digestion</strong> (physically breaking food into smaller pieces, like chewing) and <strong>chemical digestion</strong> (using enzymes and acids to break molecules apart). Both processes happen simultaneously as food moves through the system.',
+        'The digestive system does not just break food down — it also decides what to absorb into the bloodstream and what to pass out as waste. It works closely with the circulatory system to deliver nutrients to every cell in the body.'
+      ],
+      concepts: [
+        ['Oesophagus (Esophagus)', 'The muscular tube that carries food from the mouth to the stomach using wave-like contractions called peristalsis.'],
+        ['Stomach', 'A muscular bag that churns food and mixes it with gastric acid (hydrochloric acid) and enzymes to break down proteins.'],
+        ['Small Intestine', 'The longest part of the digestive tract (~6m). This is where most digestion is completed and nutrients are absorbed into the bloodstream.'],
+        ['Large Intestine (Colon)', 'Absorbs water from undigested food and forms solid waste (faeces) to be excreted. Home to trillions of gut bacteria.'],
+        ['Liver', 'Produces bile (which breaks down fats) and processes absorbed nutrients, filtering toxins from the blood.'],
+        ['Pancreas', 'Produces digestive enzymes (amylase, lipase, protease) that break down carbohydrates, fats, and proteins in the small intestine.'],
+        ['Enzyme', 'A biological molecule that speeds up chemical reactions. Digestive enzymes break large food molecules into smaller ones the body can absorb.'],
+        ['Villi', 'Tiny finger-like projections lining the small intestine that massively increase surface area for nutrient absorption.'],
+      ],
+      explanation: [
+        'Digestion begins in the <strong>mouth</strong>. Your teeth mechanically break food into smaller pieces, while saliva — which contains the enzyme <em>amylase</em> — begins breaking down starch into sugars. You produce about 1 to 1.5 litres of saliva every day.',
+        'Food then travels down the <strong>oesophagus</strong> via peristalsis — rhythmic wave-like muscle contractions that push food downward. This is why you can swallow even upside-down; gravity is not required.',
+        'In the <strong>stomach</strong>, food is churned into a liquid called <em>chyme</em>. The stomach lining secretes hydrochloric acid (pH 1.5–2) — strong enough to dissolve metal — along with enzymes like pepsin that break down proteins. A thick mucus layer protects the stomach from digesting itself.',
+        'The <strong>small intestine</strong> is the main site of digestion and absorption. The pancreas releases enzymes (amylase for carbs, lipase for fats, protease for proteins), and the liver sends bile through the bile duct to emulsify fats. Nutrients pass through the villi into tiny blood vessels and lymph vessels.',
+        'Finally, the <strong>large intestine</strong> absorbs water and electrolytes, and billions of gut bacteria break down remaining fibrous material. The leftover waste is compacted into faeces and stored in the rectum until excreted.'
+      ],
+      tips: [
+        ['Tip', 'Remember the order of organs using: <strong>Mouth → Oesophagus → Stomach → Small Intestine → Large Intestine → Rectum</strong>. Think "MOSSLAR" — <em>My Old Stomach Sure Likes Receiving Rest</em>.'],
+        ['Common mistake', 'Students mix up the small and large intestine. The <em>small</em> intestine is narrower but much longer (~6m). The <em>large</em> intestine is shorter (~1.5m) but wider — the names refer to the diameter, not the length.'],
+        ['Real-world connection', 'Stomach cramps, heartburn, and food intolerances are all digestive system issues. When you feel butterflies in your stomach before a test, that is because the gut has its own nervous system (the enteric nervous system) — sometimes called the "second brain."'],
+      ],
+      quiz: [
+        ['What are the two types of digestion and what is the difference?', 'Mechanical digestion physically breaks food into smaller pieces (e.g. chewing). Chemical digestion uses enzymes and acids to break molecules apart at a chemical level.'],
+        ['Where does most nutrient absorption take place?', 'In the small intestine, specifically through tiny finger-like projections called villi that line its walls.'],
+        ['What does the liver produce that helps digest fats?', 'Bile — a greenish-yellow fluid stored in the gallbladder and released into the small intestine to emulsify (break apart) fat droplets.'],
+        ['What is peristalsis?', 'The wave-like muscular contractions of the oesophagus (and other parts of the GI tract) that push food along without relying on gravity.'],
+        ['Why does the stomach not digest itself?', 'The stomach lining produces a thick layer of mucus that protects it from the hydrochloric acid and enzymes inside.'],
+      ],
+      summary: 'The digestive system breaks food into nutrients through mechanical and chemical digestion, absorbs them mainly in the small intestine, and excretes waste via the large intestine. Key organs include the stomach (acid + enzymes), small intestine (absorption via villi), liver (bile), and pancreas (enzymes).',
+      bullets: [
+        'Order: Mouth → Oesophagus → Stomach → Small Intestine → Large Intestine → Rectum',
+        'Mechanical digestion = physical breakdown; Chemical digestion = enzyme breakdown',
+        'Stomach acid (HCl) has a pH of about 1.5–2',
+        'Small intestine (~6m long) is the main site of nutrient absorption via villi',
+        'Liver produces bile to digest fats; pancreas produces amylase, lipase, and protease',
+        'Large intestine absorbs water and forms solid waste',
+      ]
+    },
+  };
+
+  async function generateGuide() {
+    const grade   = document.getElementById('m-grade').textContent;
+    const subject = document.getElementById('m-subject').textContent;
+    const topic   = document.getElementById('m-topic').textContent;
+
+    document.getElementById('confirmState').style.display = 'none';
+    document.getElementById('loadingState').style.display = 'block';
+
+    let msgIdx = 0;
+    const msgEl = document.getElementById('loadingMsg');
+    const msgInterval = setInterval(() => {
+      msgIdx = (msgIdx + 1) % loadingMessages.length;
+      msgEl.textContent = loadingMessages[msgIdx];
+    }, 1800);
+
+    await new Promise(r => setTimeout(r, 3000));
+    clearInterval(msgInterval);
+    closeModal();
+    showGuide(buildGuide(grade, subject, topic));
+  }
+
+  function buildGuide(grade, subject, topic) {
+    // Use rich content if we have it, otherwise use the smart template
+    const content = GUIDE_CONTENT[topic];
+    if (content) return buildRichGuide(grade, subject, topic, content);
+    return buildTemplateGuide(grade, subject, topic);
+  }
+
+  function buildRichGuide(grade, subject, topic, c) {
+    const overviewHtml   = c.overview.map(p => `<p>${p}</p>`).join('\n');
+    const conceptsHtml   = c.concepts.map(([term, def]) =>
+      `<div class="concept-card"><div class="concept-term">${term}</div><div class="concept-def">${def}</div></div>`
+    ).join('\n');
+    const explanHtml     = c.explanation.map(p => `<p>${p}</p>`).join('\n');
+    const tipsHtml       = c.tips.map(([label, text]) =>
+      `<div class="tip-box"><strong>${label}:</strong> ${text}</div>`
+    ).join('\n');
+    const quizHtml       = c.quiz.map(([q, a]) =>
+      `<div class="quiz-card" onclick="this.classList.toggle('revealed')">
+        <div class="quiz-q">${q}</div>
+        <div class="quiz-a">${a}</div>
+        <div class="quiz-hint">Tap to reveal answer</div>
+      </div>`
+    ).join('\n');
+    const bulletsHtml    = c.bullets.map(b => `<li>${b}</li>`).join('\n');
+
+    return `
+      <div class="guide-header">
+        <div class="guide-meta">${escHtml(grade)} &middot; ${escHtml(subject)}</div>
+        <h1>${escHtml(topic)}</h1>
+        <p class="guide-sub">A complete study guide covering everything you need to know.</p>
+      </div>
+      <div class="guide-section"><h2>&#128214; Overview</h2>${overviewHtml}</div>
+      <div class="guide-section"><h2>&#128273; Key Concepts</h2>${conceptsHtml}</div>
+      <div class="guide-section"><h2>&#128218; Detailed Explanation</h2>${explanHtml}</div>
+      <div class="guide-section"><h2>&#128161; Tips to Remember</h2>${tipsHtml}</div>
+      <div class="guide-section"><h2>&#9989; Quick Quiz &mdash; tap each card to reveal the answer</h2>${quizHtml}</div>
+      <div class="guide-section">
+        <h2>&#128221; Summary</h2>
+        <p>${c.summary}</p>
+        <ul>${bulletsHtml}</ul>
+      </div>`;
+  }
+
+  function buildTemplateGuide(grade, subject, topic) {
+    // Look up topic data for richer content
+    const topicData = TOPICS.find(t => t.name === topic);
+    const desc = topicData ? topicData.desc : '';
+    const related = topicData ? topicData.related : [];
+
+    return `
+      <div class="guide-header">
+        <div class="guide-meta">${escHtml(grade)} &middot; ${escHtml(subject)}</div>
+        <h1>${escHtml(topic)}</h1>
+        <p class="guide-sub">A complete study guide covering everything you need to know.</p>
+      </div>
+      <div class="guide-section">
+        <h2>&#128214; Overview</h2>
+        <p><strong>${escHtml(topic)}</strong> is an important topic in ${escHtml(subject)} for ${escHtml(grade)} students. ${desc ? desc : 'This guide will walk you through everything you need to understand this subject thoroughly.'}</p>
+        <p>As you work through this guide, pay attention to the key terms and concepts. Understanding the <em>why</em> behind each idea — not just the <em>what</em> — will help you remember it much more effectively.</p>
+        <p>Take your time with each section. If something doesn't make sense at first, re-read it and try to connect it to something you already know. Learning is about building on what you already understand.</p>
+      </div>
+      <div class="guide-section">
+        <h2>&#128273; Key Concepts</h2>
+        <div class="concept-card">
+          <div class="concept-term">${escHtml(topic)}</div>
+          <div class="concept-def">${desc ? desc : 'The central subject of this guide. Be able to define and explain this in your own words.'}</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-term">Core Vocabulary</div>
+          <div class="concept-def">Every topic has its own specific language. Identify the key terms in your textbook and make sure you can define each one clearly.</div>
+        </div>
+        <div class="concept-card">
+          <div class="concept-term">Fundamental Principles</div>
+          <div class="concept-def">What are the main rules or ideas that govern this topic? Write them out in your own words to check your understanding.</div>
+        </div>
+        ${related.length ? related.map(r => `
+        <div class="concept-card">
+          <div class="concept-term">Related Topic: ${escHtml(r)}</div>
+          <div class="concept-def">Understanding ${escHtml(r)} will deepen your knowledge of ${escHtml(topic)} and show how ideas connect.</div>
+        </div>`).join('') : ''}
+      </div>
+      <div class="guide-section">
+        <h2>&#128218; How to Study This Topic</h2>
+        <p>Start by reading your class notes and textbook sections on <strong>${escHtml(topic)}</strong>. Highlight or underline anything that seems important or that you don't fully understand yet.</p>
+        <p>Next, try to summarise what you've read in your own words — this is one of the most powerful study techniques. If you can explain it simply, you understand it. If you struggle, that shows you exactly what to review.</p>
+        <p>Practice is key. Work through any example problems, past papers, or exercises your teacher has given you. The more you apply the knowledge, the more it will stick.</p>
+        <p>Finally, create a simple one-page summary: key terms, main ideas, and any formulas or dates you need to remember. Review this summary the day before any test.</p>
+      </div>
+      <div class="guide-section">
+        <h2>&#128161; Tips to Remember</h2>
+        <div class="tip-box"><strong>Tip:</strong> Break ${escHtml(topic)} into smaller sub-topics and master one at a time before moving to the next. Trying to learn everything at once leads to confusion.</div>
+        <div class="tip-box"><strong>Common mistake:</strong> Students often memorise facts without understanding the underlying concepts. Always ask yourself <em>why</em> something is true, not just <em>what</em> it is.</div>
+        <div class="tip-box"><strong>Real-world connection:</strong> Think about where ${escHtml(topic)} appears in everyday life or in the news. Connecting new knowledge to real situations makes it much easier to remember.</div>
+      </div>
+      <div class="guide-section">
+        <h2>&#9989; Quick Quiz &mdash; tap each card to reveal the answer</h2>
+        <div class="quiz-card" onclick="this.classList.toggle('revealed')">
+          <div class="quiz-q">Can you explain <strong>${escHtml(topic)}</strong> in your own words?</div>
+          <div class="quiz-a">A strong answer uses simple language and covers the main definition, one key fact, and one real-world example.</div>
+          <div class="quiz-hint">Tap to reveal</div>
+        </div>
+        <div class="quiz-card" onclick="this.classList.toggle('revealed')">
+          <div class="quiz-q">What is the most important thing to remember about ${escHtml(topic)}?</div>
+          <div class="quiz-a">Review your notes and identify the single core idea — the one thing without which you cannot understand the rest of the topic.</div>
+          <div class="quiz-hint">Tap to reveal</div>
+        </div>
+        <div class="quiz-card" onclick="this.classList.toggle('revealed')">
+          <div class="quiz-q">How does ${escHtml(topic)} connect to other things you have learned in ${escHtml(subject)}?</div>
+          <div class="quiz-a">Good answers show that knowledge builds on itself. Identify at least one other topic that links directly to this one.</div>
+          <div class="quiz-hint">Tap to reveal</div>
+        </div>
+        <div class="quiz-card" onclick="this.classList.toggle('revealed')">
+          <div class="quiz-q">Can you give a real-world example of ${escHtml(topic)}?</div>
+          <div class="quiz-a">Think about where you have seen this topic in everyday life, in the news, or in nature. Concrete examples show deep understanding.</div>
+          <div class="quiz-hint">Tap to reveal</div>
+        </div>
+        <div class="quiz-card" onclick="this.classList.toggle('revealed')">
+          <div class="quiz-q">What question might a teacher ask about ${escHtml(topic)} on an exam?</div>
+          <div class="quiz-a">Practice writing an exam-style question and then answer it. This is one of the most effective study techniques — called <em>retrieval practice</em>.</div>
+          <div class="quiz-hint">Tap to reveal</div>
+        </div>
+      </div>
+      <div class="guide-section">
+        <h2>&#128221; Summary</h2>
+        <p>You have now worked through a full study guide on <strong>${escHtml(topic)}</strong>. The most important thing is that you can explain the key ideas in your own words, not just repeat them from memory.</p>
+        <ul>
+          <li>Review the Key Concepts section and make sure you understand each term</li>
+          <li>Re-do the quiz without looking at the answers — see how many you get right</li>
+          <li>Check your textbook and class notes for any details specific to your course</li>
+          <li>Write your own one-page summary to use before your next test</li>
+          ${related.length ? `<li>Explore related topics: ${related.map(r => escHtml(r)).join(', ')}</li>` : ''}
+        </ul>
+      </div>`;
+  }
+
+  function showGuide(html) {
+    document.getElementById('guideContent').innerHTML = html;
+    document.getElementById('guideOverlay').style.display = 'block';
+    document.getElementById('guideOverlay').scrollTop = 0;
+    document.body.style.overflow = 'hidden';
+  }
+  function closeGuide() {
+    document.getElementById('guideOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // Fallback guide builder (used if API unavailable)
+  function buildFallbackGuide(grade, subject, topic) {
+    return `
+    <div class="guide-header">
+      <div class="guide-meta">${escHtml(grade)} · ${escHtml(subject)}</div>
+      <h1>${escHtml(topic)}</h1>
+      <p class="guide-sub">A complete study guide covering everything you need to know.</p>
+    </div>
+    <div class="guide-section">
+      <h2>📖 Overview</h2>
+      <p>This study guide covers <strong>${escHtml(topic)}</strong> for ${escHtml(grade)} students in ${escHtml(subject)}. Work through each section carefully and use the quiz at the end to test yourself.</p>
+      <p>Take notes as you read, highlight anything you find tricky, and revisit the Key Concepts section before any test or exam.</p>
+    </div>
+    <div class="guide-section">
+      <h2>🔑 Key Concepts</h2>
+      <div class="concept-card">
+        <div class="concept-term">${escHtml(topic)}</div>
+        <div class="concept-def">The core subject of this guide. Make sure you can explain this in your own words before moving on.</div>
+      </div>
+      <div class="concept-card">
+        <div class="concept-term">Key Vocabulary</div>
+        <div class="concept-def">Every topic has specific words and terms. Look these up in your textbook and write them in your own words.</div>
+      </div>
+    </div>
+    <div class="guide-section">
+      <h2>💡 Tips to Remember</h2>
+      <div class="tip-box"><strong>Tip:</strong> Break the topic into smaller chunks and study one piece at a time.</div>
+      <div class="tip-box"><strong>Common mistake:</strong> Trying to memorise without understanding — focus on the "why" not just the "what".</div>
+      <div class="tip-box"><strong>Real-world connection:</strong> Think about where you see this topic in everyday life — it makes it much easier to remember.</div>
+    </div>
+    <div class="guide-section">
+      <h2>✅ Quick Quiz</h2>
+      <div class="quiz-card" onclick="this.classList.toggle('revealed')">
+        <div class="quiz-q">Can you explain ${escHtml(topic)} in your own words?</div>
+        <div class="quiz-a">Write your own answer here — if you can explain it simply, you understand it.</div>
+        <div class="quiz-hint">Tap to reveal</div>
+      </div>
+      <div class="quiz-card" onclick="this.classList.toggle('revealed')">
+        <div class="quiz-q">What is the most important thing to remember about ${escHtml(topic)}?</div>
+        <div class="quiz-a">Review your notes and highlight the single most important fact or concept.</div>
+        <div class="quiz-hint">Tap to reveal</div>
+      </div>
+    </div>
+    <div class="guide-section">
+      <h2>📝 Summary</h2>
+      <p>You have now reviewed the key ideas behind <strong>${escHtml(topic)}</strong>. Use your textbook and class notes to fill in any gaps, and come back to the quiz section to test yourself again tomorrow.</p>
+    </div>`;
+  }
+
+  // ── Toast ──────────────────────────────
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3200);
+  }
+
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escAttr(s) { return String(s).replace(/'/g,"\\'"); }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeGuide(); } });
+
+  // ── Local Topic Database ───────────────
+  const TOPICS = [
+    { name:'Fractions', desc:'Representing parts of a whole using numerators and denominators.', related:['Decimals','Ratios & Proportions','Mixed Numbers'], keywords:['fraction','fractions','numerator','denominator','halves','thirds','quarters'] },
+    { name:'Algebra', desc:'Using variables and equations to solve mathematical problems.', related:['Linear Equations','Quadratic Equations','Graphing Functions'], keywords:['algebra','algebraic','equation','variable','solve for x','linear','expression'] },
+    { name:'Geometry', desc:'Study of shapes, angles, area, and spatial relationships.', related:['Trigonometry','Coordinate Geometry','Proofs'], keywords:['geometry','geometric','shapes','angles','triangle','circle','polygon','perimeter','area','volume'] },
+    { name:'Calculus', desc:'Study of derivatives, integrals, and rates of change.', related:['Derivatives','Integrals','Limits'], keywords:['calculus','derivative','integral','differentiation','integration','limit','rate of change'] },
+    { name:'Statistics', desc:'Collecting, analyzing, and interpreting numerical data.', related:['Probability','Data Analysis','Standard Deviation'], keywords:['statistics','statistical','mean','median','mode','average','data','probability','histogram','distribution'] },
+    { name:'Trigonometry', desc:'Study of angles and relationships in triangles using sine, cosine, and tangent.', related:['Unit Circle','Trigonometric Identities','Pythagorean Theorem'], keywords:['trig','trigonometry','sine','cosine','tangent','sin','cos','tan','angles','radians','degrees'] },
+    { name:'Linear Equations', desc:'Equations that form straight lines when graphed on a coordinate plane.', related:['Slope & Intercept','Systems of Equations','Inequalities'], keywords:['linear equation','slope','y-intercept','mx+b','line','straight line'] },
+    { name:'Quadratic Equations', desc:'Polynomial equations of degree two, often solved with the quadratic formula.', related:['Factoring','Parabolas','Completing the Square'], keywords:['quadratic','parabola','x squared','ax2','bx','completing the square','quadratic formula'] },
+    { name:'Probability', desc:'The study of likelihood and chance of events occurring.', related:['Statistics','Combinations & Permutations','Expected Value'], keywords:['probability','chance','likelihood','odds','random','event','outcome'] },
+    { name:'Decimals', desc:'Numbers expressed in base-10 with digits after a decimal point.', related:['Fractions','Percents','Rounding'], keywords:['decimal','decimals','tenths','hundredths','thousandths','point'] },
+    { name:'Percentages', desc:'Expressing a value as a fraction of 100.', related:['Fractions','Ratios','Discounts & Interest'], keywords:['percent','percentage','%','discount','interest rate','tax'] },
+    { name:'Taxonomy', desc:'The science of classifying living organisms into hierarchical groups.', related:['Kingdoms of Life','Binomial Nomenclature','Evolutionary Relationships'], keywords:['taxonomy','classification','classify','kingdom','phylum','class','order','family','genus','species','binomial','nomenclature','linnaean','domain'] },
+    { name:'Photosynthesis', desc:'The process plants use to convert sunlight and CO2 into glucose.', related:['Cellular Respiration','Chloroplasts','Ecosystems'], keywords:['photosynthesis','chlorophyll','chloroplast','sunlight','glucose','co2','carbon dioxide','oxygen','plant energy'] },
+    { name:'Cell Biology', desc:'Study of the structure and function of cells, the basic unit of life.', related:['Mitosis & Meiosis','Organelles','Cell Membrane'], keywords:['cell','cells','biology','organelle','nucleus','mitochondria','membrane','cytoplasm','cell wall','eukaryote','prokaryote'] },
+    { name:'Genetics & DNA', desc:'Study of heredity, genes, and how traits are passed between generations.', related:['Mendelian Genetics','DNA Replication','Mutations'], keywords:['genetics','dna','gene','genes','heredity','chromosome','allele','dominant','recessive','mendel','trait','rna','protein'] },
+    { name:'Evolution', desc:'The process by which species change over generations through natural selection.', related:['Natural Selection','Adaptation','Speciation'], keywords:['evolution','natural selection','darwin','adapt','adaptation','species','mutation','fossil','survival of fittest'] },
+    { name:'Ecosystems', desc:'Communities of organisms interacting with their physical environment.', related:['Food Webs','Biomes','Energy Flow'], keywords:['ecosystem','biome','food chain','food web','habitat','ecology','environment','predator','prey','decomposer','producer','consumer'] },
+    { name:'Human Body Systems', desc:'The organ systems that work together to maintain human life.', related:['Circulatory System','Nervous System','Digestive System'], keywords:['human body','anatomy','organ','system','circulatory','nervous','respiratory','skeletal','muscular','endocrine','immune'] },
+    { name:'Digestive System', desc:'The organ system that breaks down food into nutrients the body can absorb and use for energy.', related:['Enzymes & Digestion','Circulatory System','Nutrients & Metabolism'], keywords:['digestive system','digestion','digest','stomach','intestine','small intestine','large intestine','esophagus','oesophagus','liver','pancreas','colon','rectum','bowel','gut','enzyme','absorb','nutrient','mouth','saliva','bile'] },
+    { name:'Circulatory System', desc:'The system of heart, blood vessels, and blood that transports oxygen and nutrients around the body.', related:['Heart & Pumping','Blood Types','Respiratory System'], keywords:['circulatory','heart','blood','vessel','artery','vein','capillary','pulse','oxygen','circulation','cardiac','cardiovascular'] },
+    { name:'Nervous System', desc:'The network of nerves and the brain that controls the body and processes information.', related:['Brain Structure','Neurons','Reflexes'], keywords:['nervous system','nerve','brain','neuron','spinal cord','reflex','signal','synapse','central nervous'] },
+    { name:'Mitosis & Meiosis', desc:'Cell division processes for growth and reproduction.', related:['Cell Cycle','Genetics','Chromosomes'], keywords:['mitosis','meiosis','cell division','chromosome','prophase','metaphase','anaphase','telophase','cytokinesis'] },
+    { name:'Periodic Table', desc:'Organized chart of all known elements arranged by atomic number.', related:['Atomic Structure','Chemical Bonding','Electron Configuration'], keywords:['periodic table','element','elements','atomic','proton','neutron','electron','metal','nonmetal','noble gas','period','group'] },
+    { name:'Chemical Bonds', desc:'The forces that hold atoms together in molecules and compounds.', related:['Ionic Bonds','Covalent Bonds','Electronegativity'], keywords:['chemical bond','bonding','ionic','covalent','metallic','hydrogen bond','electronegativity','molecule','compound'] },
+    { name:'Chemical Reactions', desc:'Processes where reactants transform into new products.', related:['Balancing Equations','Reaction Types','Stoichiometry'], keywords:['chemical reaction','reactant','product','equation','balancing','synthesis','decomposition','combustion','oxidation'] },
+    { name:'Acids & Bases', desc:'Substances defined by their proton-donating or accepting behavior; measured by pH.', related:['pH Scale','Neutralization','Buffers'], keywords:['acid','base','ph','neutral','alkaline','hydrogen ion','proton','litmus','buffer','neutralization','salt'] },
+    { name:'Atomic Structure', desc:'The composition of atoms including protons, neutrons, and electrons.', related:['Electron Configuration','Isotopes','Quantum Numbers'], keywords:['atom','atomic','proton','neutron','electron','nucleus','shell','orbital','isotope','atomic number','mass number'] },
+    { name:'Stoichiometry', desc:'Calculating quantities of reactants and products in chemical reactions.', related:['Mole Concept','Limiting Reagents','Percent Yield'], keywords:['stoichiometry','mole','molar mass','limiting reagent','percent yield','mol','avogadro'] },
+    { name:"Newton's Laws of Motion", desc:'Three fundamental laws describing the relationship between force and motion.', related:['Force & Acceleration','Momentum','Friction'], keywords:["newton's law",'newtons law','force','motion','inertia','acceleration','action reaction','f=ma','mass','friction'] },
+    { name:'Energy & Work', desc:'Study of how energy is transferred and transformed through forces.', related:['Kinetic Energy','Potential Energy','Conservation of Energy'], keywords:['energy','work','kinetic','potential','conservation','joule','power','watt','mechanical','thermal'] },
+    { name:'Waves & Sound', desc:'Study of periodic disturbances and how sound travels through matter.', related:['Frequency & Amplitude','Electromagnetic Waves','Doppler Effect'], keywords:['wave','sound','frequency','amplitude','wavelength','vibration','pitch','doppler','longitudinal','transverse'] },
+    { name:'Electricity & Circuits', desc:'Study of electric charge, current, voltage, and circuit design.', related:["Ohm's Law",'Series & Parallel Circuits','Resistance'], keywords:['electricity','circuit','current','voltage','resistance','ohm','watt','amp','conductor','insulator','battery','capacitor'] },
+    { name:'Magnetism', desc:'Forces produced by magnetic fields and their interaction with electric charges.', related:['Electromagnetism','Magnetic Fields','Motors & Generators'], keywords:['magnet','magnetism','magnetic field','pole','electromagnetic','compass','flux'] },
+    { name:'Ancient Civilizations', desc:'Early human societies including Egypt, Greece, Rome, Mesopotamia, and China.', related:['Ancient Egypt','Ancient Greece','Mesopotamia'], keywords:['ancient','civilization','egypt','greek','rome','roman','mesopotamia','babylon','china','india','pyramid','pharaoh'] },
+    { name:'American Revolution', desc:'The 18th-century colonial revolt that established the United States of America.', related:['Declaration of Independence','Constitutional Convention','Founding Fathers'], keywords:['american revolution','revolution','colonial','independence','declaration','founding fathers','patriots','british','1776','continental'] },
+    { name:'World War II', desc:'The global conflict from 1939 to 1945 involving Allied and Axis powers.', related:['Holocaust','D-Day','Cold War'], keywords:['world war 2','ww2','wwii','nazi','hitler','holocaust','allied','axis','d-day','hiroshima','pacific','europe','1939','1945'] },
+    { name:'Civil Rights Movement', desc:'The mid-20th century struggle for racial equality in the United States.', related:['Martin Luther King Jr.','Jim Crow Laws','Voting Rights Act'], keywords:['civil rights','mlk','martin luther king','segregation','rosa parks','sit-in','march','equality','racism','jim crow','naacp'] },
+    { name:'World War I', desc:'The 1914 to 1918 global war that reshaped Europe and the world.', related:['Trench Warfare','Treaty of Versailles','Causes of WWI'], keywords:['world war 1','ww1','wwi','trench','treaty versailles','1914','1918','archduke','austro-hungarian','allies','central powers'] },
+    { name:'The Cold War', desc:'Geopolitical tension between the US and USSR from 1947 to 1991.', related:['Space Race','Cuban Missile Crisis','McCarthyism'], keywords:['cold war','ussr','soviet','communism','capitalism','nuclear','arms race','space race','berlin wall','nato','cuba'] },
+    { name:'The French Revolution', desc:'Late 18th-century political upheaval that transformed France and Europe.', related:['Reign of Terror','Napoleon Bonaparte','Enlightenment'], keywords:['french revolution','france','bastille','napoleon','robespierre','guillotine','enlightenment','liberty','equality','1789'] },
+    { name:'The Renaissance', desc:'14th to 17th century European cultural and artistic rebirth inspired by classical antiquity.', related:['Leonardo da Vinci','The Reformation','Humanism'], keywords:['renaissance','humanism','da vinci','michelangelo','art','europe','florence','italy','rebirth','classical'] },
+    { name:'Parts of Speech', desc:'The grammatical categories words belong to, such as nouns, verbs, and adjectives.', related:['Sentence Structure','Punctuation','Vocabulary'], keywords:['parts of speech','noun','verb','adjective','adverb','pronoun','preposition','conjunction','interjection','grammar'] },
+    { name:'Essay Writing', desc:'Structuring and composing persuasive or expository written arguments.', related:['Thesis Statements','Paragraph Structure','Citing Sources'], keywords:['essay','writing','thesis','paragraph','argument','introduction','conclusion','body paragraph','topic sentence','evidence'] },
+    { name:'Poetry', desc:'Literary art using rhythm, imagery, and figurative language for expression.', related:['Figurative Language','Meter & Rhyme','Poetic Devices'], keywords:['poetry','poem','rhyme','meter','verse','stanza','figurative','imagery','metaphor','simile','haiku','sonnet'] },
+    { name:'Reading Comprehension', desc:'Understanding and interpreting meaning from written texts.', related:['Main Idea & Details','Inference','Text Structure'], keywords:['reading comprehension','reading','comprehension','inference','main idea','detail','context clue','summarize','interpret'] },
+    { name:'Figurative Language', desc:'Non-literal expressions like metaphors, similes, and personification.', related:['Poetry','Creative Writing','Literary Devices'], keywords:['figurative language','metaphor','simile','personification','hyperbole','alliteration','onomatopoeia','idiom','symbolism'] },
+    { name:'Shakespeare', desc:"Study of William Shakespeare's plays, sonnets, and their literary significance.", related:['Romeo & Juliet','Hamlet','Elizabethan Era'], keywords:['shakespeare','hamlet','romeo juliet','macbeth','othello','midsummer','elizabethan','sonnet','bard','iambic pentameter'] },
+    { name:'Continents & Oceans', desc:"The seven continents and five oceans that make up the surface of the Earth.", related:['World Maps','Physical Geography','Country Capitals'], keywords:['continent','ocean','africa','europe','asia','americas','australia','antarctica','pacific','atlantic','indian','arctic'] },
+    { name:'World Capitals', desc:'The capital cities of countries around the world.', related:['Countries & Flags','Maps','Political Geography'], keywords:['capital','capitals','capital city','country','countries','world capitals','geography'] },
+    { name:'Climate Zones', desc:'Geographic regions defined by their long-term weather patterns.', related:['Biomes','Weather Patterns','Global Warming'], keywords:['climate','climate zone','tropical','temperate','polar','arid','mediterranean','tundra','monsoon','weather'] },
+    { name:'US States & Capitals', desc:'The 50 US states, their capitals, locations, and key facts.', related:['US Geography','American History','Government'], keywords:['us states','state capitals','american states','united states','geography','usa','fifty states'] },
+    { name:'Verb Conjugation', desc:'Changing verb forms to match tense, person, and number in Spanish.', related:['Present Tense','Past Tense (Preterite)','Subjunctive Mood'], keywords:['verb','conjugation','conjugate','tense','present','past','future','subjunctive','ser','estar','hablar','spanish verb'] },
+    { name:'Spanish Vocabulary', desc:'Essential Spanish words and phrases for everyday communication.', related:['Greetings & Phrases','Numbers & Time','Food & Colors'], keywords:['vocabulary','vocab','words','spanish words','phrases','greetings','colors','numbers','food','family','body'] },
+    { name:'Algorithms', desc:'Step-by-step procedures for solving computational problems efficiently.', related:['Sorting Algorithms','Big O Notation','Recursion'], keywords:['algorithm','algorithms','sorting','searching','binary search','bubble sort','efficiency','pseudocode','flowchart'] },
+    { name:'Variables & Data Types', desc:'Containers for storing data values of different types in programming.', related:['Loops','Functions','Conditionals'], keywords:['variable','data type','integer','string','boolean','float','declare','assign','programming','coding'] },
+    { name:'Loops & Iteration', desc:'Programming constructs that repeat code a set number of times or until a condition is met.', related:['Variables','Functions','Recursion'], keywords:['loop','loops','iteration','for loop','while loop','repeat','iterate','counter','programming'] },
+    { name:'Data Structures', desc:'Organized ways of storing and managing data, like arrays, lists, and trees.', related:['Arrays','Linked Lists','Hash Tables'], keywords:['data structure','array','list','stack','queue','tree','graph','hash','linked list','dictionary'] },
+    { name:'HTML & CSS', desc:'The building blocks for creating and styling web pages.', related:['JavaScript','Web Design','Responsive Design'], keywords:['html','css','web','webpage','tag','element','style','class','id','div','heading','link','web design'] },
+    { name:'Boolean Logic', desc:'True/false logic used in programming decisions and digital circuits.', related:['Conditionals','Logic Gates','Binary Numbers'], keywords:['boolean','true false','and or not','logic gate','binary','conditional','if else','comparison'] },
+  ];
+
+  function lookupTopic(query, subject) {
+    const q = query.toLowerCase().trim();
+    let scored = TOPICS.map(t => {
+      let score = 0;
+      const name = t.name.toLowerCase();
+      if (name === q) score += 100;
+      else if (name.startsWith(q)) score += 60;
+      else if (q.startsWith(name)) score += 55;
+      else if (name.includes(q)) score += 40;
+      else if (q.includes(name)) score += 35;
+      t.keywords.forEach(kw => {
+        if (q === kw) score += 50;
+        else if (q.includes(kw) || kw.includes(q)) score += 20;
+        else {
+          const qw = q.split(/\s+/); const kw2 = kw.split(/\s+/);
+          qw.forEach(a => kw2.forEach(b => { if (a.length>2 && b.length>2 && (a.includes(b)||b.includes(a))) score+=10; }));
+        }
+      });
+      const nameWords = name.split(/\s+/); const queryWords = q.split(/\s+/);
+      queryWords.forEach(qw => { if (qw.length>2) nameWords.forEach(nw => { if (nw.includes(qw)||qw.includes(nw)) score+=15; }); });
+      return { topic: t, score };
+    }).filter(s => s.score > 0).sort((a,b) => b.score - a.score);
+
+    if (scored.length > 0 && scored[0].score >= 15) {
+      const best = scored[0].topic;
+      return { valid: true, canonicalTopic: best.name, description: best.desc, suggestions: best.related||[] };
+    }
+    const fallback = TOPICS.map(t => ({ t, sim: similarity(q, t.name.toLowerCase()) }))
+      .sort((a,b) => b.sim - a.sim).slice(0,4).map(x => x.t.name);
+    return { valid: false, suggestions: fallback };
+  }
+
+  function similarity(a, b) {
+    if (!a||!b) return 0;
+    const setA = new Set(ngrams(a,2)), setB = new Set(ngrams(b,2));
+    return (2*[...setA].filter(x=>setB.has(x)).length)/(setA.size+setB.size);
+  }
+  function ngrams(str, n) {
+    const r=[];
+    for (let i=0;i<=str.length-n;i++) r.push(str.slice(i,i+n));
+    return r;
+  }
+</script>
+
+</body>
+</html>
